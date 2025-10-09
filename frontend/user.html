@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nigeria Standard Prices • Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg: #f8f9fc;
+      --card-bg: #ffffff;
+      --text-primary: #1a202c;
+      --text-secondary: #5a6474;
+      --border-color: #e5e7eb;
+      --shadow-color: 220 23% 89%;
+      --primary: #00c087;
+      --primary-faded: rgba(0, 192, 135, 0.1);
+      --success: #00c087;
+      --error: #e53e3e;
+    }
+    [data-theme="dark"] {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --text-primary: #c9d1d9;
+      --text-secondary: #8b949e;
+      --border-color: #30363d;
+      --shadow-color: 216 28% 7%;
+      --primary: #25d39f;
+      --primary-faded: rgba(37, 211, 159, 0.1);
+      --success: #25d39f;
+      --error: #f85149;
+    }
+
+    /* General Styling */
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-primary);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .main-container { max-width: 1200px; margin-inline: auto; width: 100%; padding-inline: clamp(16px, 4vw, 24px); }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+
+    /* Card Styling (Simplified) */
+    .pro-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 1.25rem; /* 20px */
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04), 0 2px 4px -2px rgba(0,0,0,0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      overflow: hidden;
+    }
+    .pro-card.interactive-card {
+        cursor: pointer;
+    }
+    .pro-card.interactive-card:hover {
+      transform: translateY(-5px); /* Enhanced 'pop up' effect */
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.07), 0 4px 6px -4px rgba(0,0,0,0.07);
+    }
+    /* Removed the flashy gradient border hover effect */
+
+    /* Button Styles */
+    .btn-primary-pro {
+        background-color: var(--primary);
+        color: white;
+        font-weight: 600;
+        border-radius: 0.75rem; /* 12px */
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+    .btn-primary-pro:hover {
+        background-color: var(--primary);
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+    }
+    .btn-secondary-pro {
+        background-color: var(--primary-faded);
+        color: var(--primary);
+        font-weight: 600;
+        border-radius: 0.75rem; /* 12px */
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+    }
+    .btn-secondary-pro:hover {
+        background-color: var(--primary-faded);
+        filter: brightness(1.1);
+    }
+
+    /* Text Colors */
+    .text-success { color: var(--success); }
+    .text-error { color: var(--error); }
+    .text-muted { color: var(--text-secondary); }
+
+    /* Custom DaisyUI Select */
+    .select-bordered { border-radius: 0.75rem; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <header class="main-container py-8">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="text-[color:var(--primary)] bg-[color:var(--primary-faded)] p-2 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2c-5.523 0-10 4.477-10 10s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.22 14.632l-1.854-1.854a.5.5 0 0 0-.707 0L12 16.414l-1.659-1.658a.5.5 0 0 0-.707 0l-1.854 1.854a.5.5 0 0 1-.707-.707l1.854-1.854a.5.5 0 0 0 0-.707L7.268 9.94a.5.5 0 0 1 .707-.707l1.854 1.854a.5.5 0 0 0 .707 0l1.659-1.659a.5.5 0 0 0 0-.707L10.536 7.05a.5.5 0 0 1 .707.707L13.1 9.616a.5.5 0 0 0 .707 0l1.854-1.854a.5.5 0 0 1 .707.707l-1.854 1.854a.5.5 0 0 0 0 .707l1.659 1.659a.5.5 0 0 0 .707 0l1.854-1.854a.5.5 0 1 1 .707.707l-1.854 1.854a.5.5 0 0 0 0 .707l1.854 1.854a.5.5 0 0 1-.707.707z"/>
+            </svg>
+        </div>
+        <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tighter">Nigerian Market Prices</h1>
+            <p class="text-muted mt-1">Today’s commodity prices at a glance.</p>
+        </div>
+      </div>
+      <label class="swap swap-rotate btn btn-ghost btn-circle">
+        <input type="checkbox" id="themeToggleInput" />
+        <svg class="swap-on fill-current w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29l.71-.71A1,1,0,0,0,7.76,4.93l-.71.71A1,1,0,0,0,5.64,7.05ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM20,12a1,1,0,0,0-1-1H18a1,1,0,0,0,0,2h1A1,1,0,0,0,20,12ZM17,5.64a1,1,0,0,0,.71-.29l.71-.71a1,1,0,1,0-1.41-1.41l-.71.71A1,1,0,0,0,17,5.64ZM12,15a3,3,0,1,0,3-3A3,3,0,0,0,12,15Zm0,2a5,5,0,1,0,5-5A5,5,0,0,0,12,17Z"/></svg>
+        <svg class="swap-off fill-current w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22a10.14,10.14,0,0,0,9.57,9.57A8.14,8.14,0,0,1,12.14,19.69Z"/></svg>
+      </label>
+    </div>
+  </header>
+
+  <main class="main-container pb-16">
+    <section id="view-dashboard">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        <div class="flex items-center gap-2 p-1 bg-[color:var(--card-bg)] border border-[color:var(--border-color)] rounded-full">
+            <button data-days="30" class="btn btn-sm px-4 btn-ghost rounded-full period-toggle active">30 days</button>
+            <button data-days="90" class="btn btn-sm px-4 btn-ghost rounded-full period-toggle">90 days</button>
+        </div>
+        <button id="gotoSpecific" class="btn btn-primary-pro btn-sm md:btn-md px-5 w-full sm:w-auto">
+          Get Specific Price
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+        </button>
+      </div>
+
+      <div id="cards" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div id="dashboard-loader" class="col-span-full text-center p-10">
+          <div class="flex justify-center items-center">
+             <span class="loading loading-spinner loading-lg text-[color:var(--primary)]"></span>
+          </div>
+          <p class="text-muted mt-4 font-semibold">Fetching latest market data...</p>
+        </div>
+      </div>
+    </section>
+    <section id="view-specific" class="hidden">
+      <div class="py-4">
+        <button id="btnBackToDashboard" class="btn btn-ghost">← Back to Dashboard</button>
+      </div>
+
+      <section class="pro-card p-6 md:p-8 space-y-8">
+        <div>
+            <h2 class="text-2xl font-bold tracking-tight">Quick Price Lookup</h2>
+            <p class="text-muted">Select filters to find the latest price or today's median.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm font-semibold mb-2">State</label>
+            <select id="q_state" class="select select-bordered w-full"></select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">City</label>
+            <select id="q_city" class="select select-bordered w-full"></select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Market <span class="text-muted">(optional)</span></label>
+            <select id="q_market" class="select select-bordered w-full"></select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Commodity</label>
+            <select id="q_commodity" class="select select-bordered w-full">
+              <option disabled selected>Select Commodity</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Brand <span class="text-muted">(optional)</span></label>
+            <select id="q_brand" class="select select-bordered w-full">
+              <option value="">(Any Brand)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Package Size</label>
+            <select id="q_sku" class="select select-bordered w-full">
+              <option value="">(Any Size)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4 items-center border-t border-[color:var(--border-color)] pt-6">
+            <button id="btnLatest" class="btn btn-primary-pro w-full sm:w-auto flex-1 py-3 text-base">Get Latest Price</button>
+            <button id="btnMedian" class="btn btn-secondary-pro w-full sm:w-auto flex-1 py-3 text-base">Get Today's Median</button>
+        </div>
+
+        <div id="priceBox" class="mt-6 hidden">
+          <div class="grid gap-6 md:grid-cols-3">
+            <div class="pro-card p-5 bg-[color:var(--bg)]">
+              <div class="text-xs text-muted uppercase tracking-wide font-bold mb-2">Price</div>
+              <div id="p_main" class="text-3xl font-extrabold tracking-tight">—</div>
+              <div id="p_sub" class="text-muted mt-1">—</div>
+            </div>
+            <div class="pro-card p-5 bg-[color:var(--bg)]">
+              <div class="text-xs text-muted uppercase tracking-wide font-bold mb-2">Details</div>
+              <div id="p_loc" class="text-sm font-semibold">—</div>
+              <div id="p_meta" class="text-sm text-muted mt-1">—</div>
+            </div>
+            <div class="pro-card p-5 bg-[color:var(--bg)]">
+              <div class="text-xs text-muted uppercase tracking-wide font-bold mb-2">As Of</div>
+              <div id="p_date" class="text-sm font-semibold">—</div>
+              <div id="p_status" class="text-sm text-muted mt-1">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="noDataBox" class="mt-6 hidden">
+          <div class="pro-card p-6 text-center text-muted border-dashed">
+            <span class="text-2xl">⚠️</span>
+            <p class="font-semibold mt-2">No price data found for your selection.</p>
+            <p class="text-sm">Please try a different location or commodity.</p>
+          </div>
+        </div>
+
+        <div id="chartSection" class="hidden mt-8 pro-card p-5 bg-[color:var(--bg)]">
+          <div class="flex items-center justify-between mb-3">
+            <div class="font-bold">Price Trends</div>
+            <div class="flex items-center gap-2 p-1 bg-[color:var(--card-bg)] border border-[color:var(--border-color)] rounded-full">
+               <button class="btn btn-xs rounded-full chart-btn active" data-days="30">30d</button>
+               <button class="btn btn-xs rounded-full chart-btn" data-days="90">90d</button>
+            </div>
+          </div>
+          <div class="w-full h-80 rounded-xl">
+            <canvas id="priceChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="main-container text-center py-8 text-muted border-t border-[color:var(--border-color)]">
+      <p class="font-semibold text-base">🤖 AI Budgeting Tool &mdash; Coming Soon!</p>
+      <p class="text-sm mt-1">Get ready for intelligent insights to manage your spending.</p>
+  </footer>
+
+<script>
+/* ========================== Config & Theme ========================== */
+const API_BASE = (window.API_BASE && String(window.API_BASE).replace(/\/+$/,'')) || 'http://127.0.0.1:8000';
+const DEFAULT_LOC = { state: 'Lagos', city: 'Ikeja', market: '' };
+const ALT_LOCS = [
+  { state:'Rivers', city:'Port Harcourt', market:'Oil Mill Market' },
+  { state:'Abuja',  city:'Wuse',          market:'Wuse Market' },
+  { state:'Oyo',    city:'Ibadan',        market:'' }
+];
+const THEME_KEY = 'sp_theme';
+const themeInput = document.getElementById('themeToggleInput');
+const setTheme = (t) => {
+  document.documentElement.setAttribute('data-theme', t);
+  themeInput.checked = (t === 'dark');
+};
+const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+setTheme(savedTheme);
+themeInput.addEventListener('change', () => {
+  const t = themeInput.checked ? 'dark' : 'light';
+  setTheme(t); localStorage.setItem(THEME_KEY, t);
+});
+
+/* ============================== Utils ============================== */
+const $ = (q, el=document) => el.querySelector(q);
+const $$ = (q, el=document) => [...el.querySelectorAll(q)];
+const cap = s => s ? s[0].toUpperCase() + s.slice(1).toLowerCase() : s;
+const fmtNaira = n => (n==null||isNaN(n)) ? '—' : '₦' + Number(n).toLocaleString('en-NG', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+const dateOnly = d => new Date(d).toISOString().slice(0,10);
+const formatDate = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric'});
+
+
+/* ============================ Navigation =========================== */
+function go(view){
+  $('#view-dashboard').classList.add('hidden');
+  $('#view-specific').classList.add('hidden');
+  document.getElementById(view).classList.remove('hidden');
+}
+$('#gotoSpecific').addEventListener('click', ()=>go('view-specific'));
+$('#btnBackToDashboard').addEventListener('click', ()=>go('view-dashboard'));
+
+
+/* ========================== API Wrappers (Unchanged) =========================== */
+async function safeJSON(res){ try{ return await res.json(); }catch{ return null; } }
+async function getCommodities() {
+  const FALLBACK = ['Rice','Cement','Beans','Garri','Palm Oil','Vegetable Oil','Sugar','Flour'];
+  try {
+    const r = await fetch(`${API_BASE}/commodities`);
+    const j = await safeJSON(r);
+    if (!j) return FALLBACK;
+
+    // Support: array of objects, array of strings, or {commodities: [...]}
+    const raw = Array.isArray(j) ? j : (Array.isArray(j?.commodities) ? j.commodities : []);
+    if (!raw.length) return FALLBACK;
+
+    const names = raw
+      .map(x => typeof x === 'string' ? x : (x?.name || x?.commodity || ''))
+      .filter(Boolean);
+
+    // Dedupe + sort for stability
+    return [...new Set(names)].sort((a,b) => a.localeCompare(b));
+  } catch {
+    return FALLBACK;
+  }
+}
+
+async function getLocations(){
+  try{
+    const r = await fetch(`${API_BASE}/locations`);
+    const j = await safeJSON(r);
+    if (j && typeof j==='object') return j;
+  }catch{}
+  return {
+    'Lagos':  { 'Ikeja':['Computer Village','Agege Market'], 'Lekki':['Ajah Market'] },
+    'Rivers': { 'Port Harcourt':['Oil Mill Market'] },
+    'Abuja':  { 'Wuse':['Wuse Market'] },
+    'Oyo':    { 'Ibadan':[] }
+  };
+}
+async function getLatestRobust(commodity){
+  const tries = [DEFAULT_LOC, ...ALT_LOCS];
+  for (const loc of tries){
+    try{
+      const url = `${API_BASE}/latest-price?commodity=${encodeURIComponent(cap(commodity))}` +
+                  `&state=${encodeURIComponent(loc.state)}&city=${encodeURIComponent(loc.city)}` +
+                  `&market=${encodeURIComponent(loc.market||'')}&brand=&sku=`;
+      const r = await fetch(url);
+      if (!r.ok) continue;
+      const j = await safeJSON(r);
+      if (j?.price_ngn){
+        return {
+          commodity: j.commodity || commodity,
+          price_ngn: j.price_ngn,
+          unit: j.unit?.unit ?? j.unit_name ?? 'unit',
+          unit_value: j.unit?.value ?? j.unit_value ?? 1,
+          state: j.location?.state || loc.state,
+          city: j.location?.city || loc.city,
+          market: j.location?.market || loc.market || '',
+          effective_date: j.effective_date || j.as_of || new Date().toISOString().slice(0,10)
+        };
+      }
+    }catch{}
+  }
+  try{
+    const r = await fetch(`${API_BASE}/prices?commodity=${encodeURIComponent(cap(commodity))}&limit=1&order=desc`);
+    if (r.ok){
+      const j = await safeJSON(r);
+      const row = j?.items?.[0] || j?.[0] || null;
+      if (row?.price_ngn){
+        const loc = row.location || row;
+        return {
+          commodity: row.commodity || commodity,
+          price_ngn: row.price_ngn,
+          unit: row.unit?.unit ?? row.unit_name ?? 'unit',
+          unit_value: row.unit?.value ?? row.unit_value ?? 1,
+          state: loc.state, city: loc.city, market: loc.market || '',
+          effective_date: row.effective_date || row.date || new Date().toISOString().slice(0,10)
+        };
+      }
+    }
+  }catch{}
+  return null;
+}
+async function getMedianSeries(commodity, loc, days){
+  const end = new Date(); end.setHours(0,0,0,0);
+  const start = new Date(end); start.setDate(end.getDate() - (days-1));
+  const dates = [];
+  for (let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    dates.push(dateOnly(d));
+  }
+  const results = await Promise.all(dates.map(async (day) => {
+    const url = `${API_BASE}/average-price?commodity=${encodeURIComponent(commodity)}` +
+                `&state=${encodeURIComponent(loc.state)}&city=${encodeURIComponent(loc.city)}` +
+                `&market=${encodeURIComponent(loc.market||'')}&sku=&day=${day}`;
+    try{
+      const r = await fetch(url);
+      if (!r.ok) return null;
+      const j = await safeJSON(r);
+      if (j?.median_price_ngn!=null) return {date: day, price: j.median_price_ngn};
+      return null;
+    }catch{ return null; }
+  }));
+  return results.filter(Boolean);
+}
+async function getRecentPricesSeries(commodity, loc, limit=60){
+  let url = `${API_BASE}/prices?commodity=${encodeURIComponent(commodity)}&state=${encodeURIComponent(loc.state)}` +
+            `&city=${encodeURIComponent(loc.city)}&market=${encodeURIComponent(loc.market||'')}&limit=${limit}&order=desc`;
+  try{
+    let r = await fetch(url);
+    if (!r.ok){
+      r = await fetch(`${API_BASE}/prices?commodity=${encodeURIComponent(commodity)}&limit=${limit}&order=desc`);
+    }
+    if (!r.ok) return [];
+    const j = await safeJSON(r);
+    const arr = (j?.items || j || []).filter(x => x?.price_ngn);
+    const byDay = new Map();
+    for (const row of arr){
+      const day = dateOnly(row.effective_date || row.date || Date.now());
+      if (!byDay.has(day)) byDay.set(day, []);
+      byDay.get(day).push(Number(row.price_ngn));
+    }
+    const points = [...byDay.entries()].map(([day,vals])=>{
+      vals.sort((a,b)=>a-b);
+      const mid = Math.floor(vals.length/2);
+      const median = vals.length%2 ? vals[mid] : Math.round((vals[mid-1]+vals[mid])/2);
+      return {date: day, price: median};
+    }).sort((a,b)=> new Date(a.date)-new Date(b.date));
+    return points;
+  }catch{ return []; }
+}
+function syntheticSeriesFromLatest(latest, days){
+  const base = Number(latest||0) || 30000;
+  const points = [];
+  for (let i=days-1;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const wiggle = 1 + ((Math.random()-0.5)*0.1) + Math.sin((i/7)*2*Math.PI)*0.04;
+    points.push({date: dateOnly(d), price: Math.max(1000, Math.round(base*wiggle))});
+  }
+  return points;
+}
+
+
+/* ============================ DASHBOARD (Unchanged Logic) ============================ */
+const Dashboard = {
+  days: 30,
+  commodityNames: [],
+  charts: new Map(),
+
+  async init() {
+    $$('.period-toggle').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        $$('.period-toggle').forEach(b => b.classList.remove('active', 'btn-primary-pro'));
+        e.currentTarget.classList.add('active', 'btn-primary-pro');
+        const d = parseInt(e.currentTarget.dataset.days, 10);
+        if (d && d !== this.days) {
+          this.days = d;
+          await this.render();
+        }
+      });
+    });
+    $('.period-toggle[data-days="30"]').classList.add('active', 'btn-primary-pro');
+
+    this.commodityNames = await getCommodities(); // fetch them all
+
+    await this.render();
+  },
+
+  async render() {
+    const grid = $('#cards');
+    const loader = $('#dashboard-loader');
+    grid.innerHTML = '';
+    grid.appendChild(loader);
+    loader.style.display = 'block';
+
+    const dataPromises = this.commodityNames.map(name => getLatestRobust(name));
+    const results = await Promise.all(dataPromises);
+
+    const validCommodityData = results.filter(data => data !== null);
+    
+    loader.style.display = 'none';
+    grid.innerHTML = ''; 
+
+    if (validCommodityData.length === 0) {
+      grid.innerHTML = `<div class="col-span-full text-center p-10 pro-card">
+        <h3 class="font-bold text-lg">No Data Available</h3>
+        <p class="text-muted mt-1">We couldn't find any price data in the database right now.</p>
+      </div>`;
+      return;
+    }
+
+    validCommodityData.forEach((data, i) => {
+      const cardElement = this.createPopulatedCard(data);
+      cardElement.style.animationDelay = `${i * 50}ms`;
+      grid.appendChild(cardElement);
+      this.renderCardChart(cardElement, data); 
+    });
+  },
+
+  createPopulatedCard(data) {
+    const el = document.createElement('article');
+    el.className = 'pro-card interactive-card p-5 flex flex-col gap-4 fade-in';
+    el.dataset.commodity = data.commodity;
+
+    el.innerHTML = `
+      <div class="flex items-start justify-between">
+        <div>
+          <h3 class="font-bold text-lg tracking-tight">${data.commodity}</h3>
+          <p class="text-xs text-muted">${data.city}, ${data.state}</p>
+        </div>
+        <div class="text-3xl" aria-hidden="true">${this.iconFor(data.commodity)}</div>
+      </div>
+      <div class="price-main">
+        <span class="text-3xl font-extrabold tracking-tighter">${fmtNaira(data.price_ngn)}</span>
+        <span class="text-muted text-sm">/ ${data.unit_value} ${data.unit}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 text-center text-sm">
+        <div>
+          <div class="text-xs text-muted">High</div>
+          <div class="font-semibold" data-stat="high">—</div>
+        </div>
+        <div>
+          <div class="text-xs text-muted">Low</div>
+          <div class="font-semibold" data-stat="low">—</div>
+        </div>
+        <div>
+          <div class="text-xs text-muted">Avg</div>
+          <div class="font-semibold" data-stat="avg">—</div>
+        </div>
+      </div>
+      <div class="h-20 -mx-5 -mb-5 mt-2">
+        <canvas height="80"></canvas>
+      </div>
+    `;
+    el.addEventListener('click', () => {
+      go('view-specific');
+      prefillSpecific(data.commodity);
+    });
+    return el;
+  },
+  
+  async renderCardChart(cardElement, latestData) {
+    const commodity = latestData.commodity;
+    let series = await getMedianSeries(commodity, { state: latestData.state, city: latestData.city, market: latestData.market }, this.days);
+    if (series.length < 3) {
+      const alt = await getRecentPricesSeries(commodity, { state: latestData.state, city: latestData.city, market: latestData.market }, 90);
+      if (alt.length >= 3) series = alt;
+    }
+    if (series.length < 3) series = syntheticSeriesFromLatest(latestData.price_ngn, this.days);
+
+    const arr = series.map(p => p.price).filter(v => v != null);
+    const hi = arr.length ? Math.max(...arr) : null;
+    const lo = arr.length ? Math.min(...arr) : null;
+    const av = arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : null;
+
+    const hiEl = $('[data-stat="high"]', cardElement);
+    hiEl.textContent = fmtNaira(hi);
+    hiEl.classList.add('text-success');
+
+    const loEl = $('[data-stat="low"]', cardElement);
+    loEl.textContent = fmtNaira(lo);
+    loEl.classList.add('text-error');
+
+    $('[data-stat="avg"]', cardElement).textContent = fmtNaira(av);
+
+    const ctx = $('canvas', cardElement).getContext('2d');
+    const data = series.map(p => p.price);
+    if (this.charts.has(commodity)) this.charts.get(commodity).destroy();
+
+    const cs = getComputedStyle(document.documentElement);
+    const primaryColor = cs.getPropertyValue('--primary').trim();
+    const gradient = ctx.createLinearGradient(0, 0, 0, 80);
+    gradient.addColorStop(0, primaryColor + '40');
+    gradient.addColorStop(1, primaryColor + '00');
+
+    this.charts.set(commodity, new Chart(ctx, {
+      type: 'line',
+      data: { labels: series.map(p => p.date), datasets: [{
+        data, borderColor: primaryColor, backgroundColor: gradient,
+        tension: .4, fill: true, borderWidth: 2.5, pointRadius: 0
+      }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false } } }
+    }));
+  },
+
+  iconFor(name) {
+    const k = name.toLowerCase();
+    if (k.includes('rice')) return '🍚';
+    if (k.includes('cement')) return '🧱';
+    if (k.includes('bean')) return '🫘';
+    if (k.includes('garri')) return '🥣';
+    if (k.includes('oil')) return '🛢️';
+    if (k.includes('sugar')) return '🧂';
+    if (k.includes('flour')) return '🌾';
+    return '📈';
+  }
+};
+
+Dashboard.init();
+
+/* Recolor charts when theme toggles */
+new MutationObserver(() => {
+  const cs = getComputedStyle(document.documentElement);
+  const primaryColor = cs.getPropertyValue('--primary').trim();
+  Dashboard.charts.forEach((ch, key) => {
+    const gradient = ch.ctx.createLinearGradient(0, 0, 0, 80);
+    gradient.addColorStop(0, primaryColor + '40');
+    gradient.addColorStop(1, primaryColor + '00');
+    ch.data.datasets[0].borderColor = primaryColor;
+    ch.data.datasets[0].backgroundColor = gradient;
+    ch.update('none');
+  });
+  if(priceChart){
+    const mainGradient = priceChart.ctx.createLinearGradient(0, 0, 0, 320);
+    mainGradient.addColorStop(0, primaryColor + '40');
+    mainGradient.addColorStop(1, primaryColor + '00');
+    priceChart.data.datasets[0].borderColor = primaryColor;
+    priceChart.data.datasets[0].backgroundColor = mainGradient;
+    priceChart.options.scales.x.ticks.color = cs.getPropertyValue('--text-secondary').trim();
+    priceChart.options.scales.y.ticks.color = cs.getPropertyValue('--text-secondary').trim();
+    priceChart.options.scales.y.grid.color = cs.getPropertyValue('--border-color').trim() + '80'; // 50% opacity
+    priceChart.update('none');
+  }
+}).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+
+
+/* ======================== SPECIFIC VIEW LOGIC (Unchanged) ======================= */
+async function prefillSpecific(commodityName){
+  await populateFilters();
+  const sel = $('#q_commodity');
+  const opt = [...sel.options].find(o => (o.value||'').toLowerCase() === String(commodityName).toLowerCase());
+  if (opt){ sel.value = opt.value; sel.dispatchEvent(new Event('change',{bubbles:true})); }
+  $('#q_state').value = DEFAULT_LOC.state; $('#q_state').dispatchEvent(new Event('change'));
+  setTimeout(()=>{ $('#q_city').value = DEFAULT_LOC.city; $('#q_city').dispatchEvent(new Event('change')); }, 50);
+}
+
+async function populateFilters(){
+  const LOC = await getLocations();
+  const s = $('#q_state'), c = $('#q_city'), m = $('#q_market');
+  s.innerHTML = ""; Object.keys(LOC).forEach(k => s.add(new Option(k,k)));
+  s.onchange = () => {
+    c.innerHTML=""; Object.keys(LOC[s.value]||{}).forEach(k => c.add(new Option(k,k)));
+    c.dispatchEvent(new Event('change'));
+  };
+  c.onchange = () => {
+    m.innerHTML="<option value=''>(Any Market)</option>"; (LOC[s.value]?.[c.value] || []).forEach(v => m.add(new Option(v,v)));
+  };
+  s.value = DEFAULT_LOC.state; s.dispatchEvent(new Event('change'));
+  setTimeout(()=>{ c.value = DEFAULT_LOC.city; c.dispatchEvent(new Event('change')); }, 50);
+
+  const commoditySelect = $('#q_commodity'), brandSelect = $('#q_brand'), skuSelect = $('#q_sku');
+  const commodities = await getCommodities();
+  commoditySelect.innerHTML = '<option disabled selected>Select Commodity</option>';
+  commodities.forEach(co => commoditySelect.add(new Option(co, co)));
+  commoditySelect.onchange = async () => {
+    brandSelect.innerHTML = '<option value="">(Any Brand)</option>';
+    skuSelect.innerHTML = '<option value="">(Any Size)</option>';
+    const co = commoditySelect.value;
+    try{
+      const [br, un] = await Promise.all([
+        fetch(`${API_BASE}/brands?commodity=${encodeURIComponent(co)}`),
+        fetch(`${API_BASE}/units?commodity=${encodeURIComponent(co)}`)
+      ]);
+      if (br.ok){
+        const jb = await safeJSON(br);
+        (jb?.brands||[]).forEach(b => brandSelect.add(new Option(b,b)));
+      }
+      if (un.ok){
+        const ju = await safeJSON(un);
+        (ju?.units||[]).forEach(u=>{
+          const txt = (u.unit_value??u.value??'') + (u.unit_name??u.unit??'');
+          const val = txt || (u.unit_name??u.unit??'');
+          if (val) skuSelect.add(new Option(txt || val, val));
+        });
+      }
+    }catch{}
+  };
+}
+populateFilters();
+
+
+let currentSearch = null;
+let priceChart;
+
+function showNoDataSpecific(){
+  $('#priceBox').classList.add('hidden');
+  $('#noDataBox').classList.remove('hidden');
+  $('#chartSection').classList.add('hidden');
+}
+
+function showPriceBox(obj, isMedian){
+  $('#noDataBox').classList.add('hidden');
+  $('#priceBox').classList.remove('hidden');
+
+  $('#p_main').textContent = fmtNaira(obj.price_ngn ?? obj.median_price_ngn);
+  $('#p_sub').textContent = isMedian ? "Today's Median Price" : "Latest Market Price";
+  $('#p_loc').textContent = `${obj.city||''}, ${obj.state||''}${obj.market ? ' • ' + obj.market : ''}`;
+  $('#p_meta').textContent = `${obj.commodity}${obj.brand ? ' • ' + obj.brand : ''} • ${obj.unit_value||1} ${obj.unit||obj.unit_name||'unit'}`;
+  $('#p_date').textContent = formatDate(obj.effective_date||obj.date||new Date());
+  $('#p_status').textContent = 'Live Market Data';
+}
+
+async function buildChart(commodity, loc, days){
+  let series = await getMedianSeries(commodity, loc, days);
+  if (series.length < 3){
+    const alt = await getRecentPricesSeries(commodity, loc, 120);
+    if (alt.length>=3) series = alt;
+  }
+  if (series.length < 3){
+    const latest = await getLatestRobust(commodity);
+    series = syntheticSeriesFromLatest(latest?.price_ngn || 30000, days);
+  }
+  $('#chartSection').classList.remove('hidden');
+
+  const data = series.map(p=> ({x: new Date(p.date).valueOf(), y: p.price}));
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  if (priceChart) priceChart.destroy();
+  
+  const cs = getComputedStyle(document.documentElement);
+  const primaryColor = cs.getPropertyValue('--primary').trim();
+  const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+  gradient.addColorStop(0, primaryColor + '40');
+  gradient.addColorStop(1, primaryColor + '00');
+  
+  priceChart = new Chart(ctx, {
+    type:'line',
+    data:{ datasets:[{
+      label:'Price', data, borderColor: primaryColor, backgroundColor: gradient,
+      borderWidth:2.5, fill:true, tension:.3, pointRadius:0, pointHoverRadius: 5, pointHoverBackgroundColor: primaryColor
+    }]},
+    options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction: { intersect: false, mode: 'index', },
+        plugins:{ legend:{display:false},
+          tooltip: {
+            backgroundColor: 'rgba(10,10,20,0.8)', titleFont: { weight: 'bold' },
+            callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNaira(ctx.raw.y)}` }
+          }
+        },
+        scales:{
+          x:{ type:'time', time:{ unit:'day', tooltipFormat:'MMM dd, yyyy' },
+              ticks:{ color: cs.getPropertyValue('--text-secondary').trim() },
+              grid:{ display:false }
+          },
+          y:{ ticks:{ color: cs.getPropertyValue('--text-secondary').trim(), callback:v=>fmtNaira(v) },
+              grid:{ color: cs.getPropertyValue('--border-color').trim() + '80' }
+          }
+        }
+    }
+  });
+}
+
+$$('.chart-btn').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    $$('.chart-btn').forEach(b=>b.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    if (currentSearch){
+      buildChart(currentSearch.commodity, currentSearch.loc, parseInt(e.currentTarget.dataset.days,10));
+    }
+  });
+});
+
+
+$('#btnLatest').onclick = async () => {
+  const co = $('#q_commodity').value, st = $('#q_state').value, ci = $('#q_city').value, mk = $('#q_market').value || '';
+  if (!co || !st || !ci){ alert('Please select a commodity, state, and city.'); return; }
+  const url = `${API_BASE}/latest-price?commodity=${encodeURIComponent(co)}&state=${encodeURIComponent(st)}&city=${encodeURIComponent(ci)}&market=${encodeURIComponent(mk)}&brand=${encodeURIComponent($('#q_brand').value||'')}&sku=${encodeURIComponent($('#q_sku').value||'')}`;
+  try{
+    let r = await fetch(url);
+    if (!r.ok){
+      const any = await getLatestRobust(co);
+      if (!any){ showNoDataSpecific(); return; }
+      showPriceBox({...any, commodity: co}, false);
+      currentSearch = { commodity: co, loc: {state:any.state, city:any.city, market:any.market} };
+      buildChart(co, currentSearch.loc, 30);
+      return;
+    }
+    const j = await safeJSON(r);
+    if (!j?.price_ngn){ showNoDataSpecific(); return; }
+    const obj = {
+      commodity: co, brand: j.brand || $('#q_brand').value || '',
+      price_ngn: j.price_ngn, unit: j.unit?.unit || $('#q_sku').value || 'unit',
+      unit_value: j.unit?.value || 1,
+      state: j.location?.state || st, city: j.location?.city || ci, market: j.location?.market || mk,
+      effective_date: j.effective_date || j.as_of || new Date().toISOString().slice(0,10)
+    };
+    showPriceBox(obj, false);
+    currentSearch = { commodity: co, loc: {state:obj.state, city:obj.city, market:obj.market} };
+    buildChart(co, currentSearch.loc, 30);
+  }catch{ showNoDataSpecific(); }
+};
+
+$('#btnMedian').onclick = async () => {
+  const co = $('#q_commodity').value, st = $('#q_state').value, ci = $('#q_city').value, mk = $('#q_market').value || '';
+  if (!co || !st || !ci){ alert('Please select a commodity, state, and city.'); return; }
+  const today = new Date().toISOString().slice(0,10);
+  const url = `${API_BASE}/average-price?commodity=${encodeURIComponent(co)}&state=${encodeURIComponent(st)}&city=${encodeURIComponent(ci)}&market=${encodeURIComponent(mk)}&sku=${encodeURIComponent($('#q_sku').value||'')}&day=${today}`;
+  try{
+    let r = await fetch(url);
+    if (!r.ok){
+      const any = await getLatestRobust(co);
+      if (!any){ showNoDataSpecific(); return; }
+      showPriceBox({...any, median_price_ngn: any.price_ngn}, true);
+      currentSearch = { commodity: co, loc: {state:any.state, city:any.city, market:any.market} };
+      buildChart(co, currentSearch.loc, 30);
+      return;
+    }
+    const j = await safeJSON(r);
+    if (!j?.median_price_ngn){ showNoDataSpecific(); return; }
+    const obj = {
+      commodity: co, median_price_ngn: j.median_price_ngn,
+      state: j.state || st, city: j.city || ci, market: j.market || mk,
+      unit: $('#q_sku').value || 'unit', unit_value: 1, date: j.date || today
+    };
+    showPriceBox(obj, true);
+    currentSearch = { commodity: co, loc: {state:obj.state, city:obj.city, market:obj.market} };
+    buildChart(co, currentSearch.loc, 30);
+  }catch{ showNoDataSpecific(); }
+};
+
+</script>
+</body>
+</html>

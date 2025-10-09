@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin • Standardized Pricing</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'] },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* === same design system as user.html === */
+    :root {
+      --bg: #f8f9fc;
+      --card-bg: #ffffff;
+      --text-primary: #1a202c;
+      --text-secondary: #5a6474;
+      --border-color: #e5e7eb;
+      --shadow-color: 220 23% 89%;
+      --primary: #00c087;
+      --primary-faded: rgba(0, 192, 135, 0.1);
+      --success: #00c087;
+      --error: #e53e3e;
+    }
+    [data-theme="dark"]{
+      --bg:#0d1117; --card-bg:#161b22; --text-primary:#c9d1d9; --text-secondary:#8b949e;
+      --border-color:#30363d; --shadow-color:216 28% 7%; --primary:#25d39f; --primary-faded:rgba(37,211,159,.1);
+      --success:#25d39f; --error:#f85149;
+    }
+    html, body{height:100%}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-primary);}
+
+    .main-container{max-width:1200px;margin-inline:auto;width:100%;padding-inline:clamp(16px,4vw,24px)}
+    .pro-card{background-color:var(--card-bg);border:1px solid var(--border-color);border-radius:1.25rem;
+      box-shadow:0 4px 6px -1px rgba(0,0,0,.04),0 2px 4px -2px rgba(0,0,0,.04);transition:transform .2s,box-shadow .2s;overflow:hidden}
+    .pro-card:hover{transform:translateY(-2px);box-shadow:0 10px 15px -3px rgba(0,0,0,.07),0 4px 6px -4px rgba(0,0,0,.07)}
+    .btn-primary-pro{background:var(--primary);color:#fff;font-weight:600;border-radius:.75rem;border:1px solid transparent;transition:.2s}
+    .btn-primary-pro:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    .btn-secondary-pro{background:var(--primary-faded);color:var(--primary);font-weight:600;border-radius:.75rem;border:1px solid transparent}
+    .btn-secondary-pro:hover{filter:brightness(1.05)}
+    .pill{border:1px solid var(--border-color);color:var(--text-secondary);border-radius:999px;padding:.2rem .6rem;font-weight:600;font-size:.8rem}
+    .label-muted{color:var(--text-secondary);font-size:.85rem}
+    .tab{border-bottom:2px solid transparent;padding-bottom:.5rem;cursor:pointer}
+    .tab.active{border-color:var(--primary);color:var(--primary)}
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Header -->
+  <header class="main-container py-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Admin Console</h1>
+        <p class="text-[color:var(--text-secondary)] mt-1">Upload → preview → approve → store</p>
+      </div>
+      <label class="swap swap-rotate btn btn-ghost btn-circle">
+        <input type="checkbox" id="themeToggleInput" />
+        <svg class="swap-on fill-current w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29l.71-.71A1,1,0,0,0,7.76,4.93l-.71.71A1,1,0,0,0,5.64,7.05ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM20,12a1,1,0,0,0-1-1H18a1,1,0,0,0,0,2h1A1,1,0,0,0,20,12ZM17,5.64a1,1,0,0,0,.71-.29l.71-.71a1,1,0,1,0-1.41-1.41l-.71.71A1,1,0,0,0,17,5.64ZM12,15a3,3,0,1,0,3-3A3,3,0,0,0,12,15Zm0,2a5,5,0,1,0,5-5A5,5,0,0,0,12,17Z"/></svg>
+        <svg class="swap-off fill-current w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22a10.14,10.14,0,0,0,9.57,9.57A8.14,8.14,0,0,1,12.14,19.69Z"/></svg>
+      </label>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <main class="main-container pb-24">
+    <section class="pro-card p-5 md:p-7">
+      <div class="flex flex-wrap gap-6 border-b border-[color:var(--border-color)] pb-3">
+        <button class="tab active" data-tab="manual">Manual Entry</button>
+        <button class="tab" data-tab="csv">CSV</button>
+        <button class="tab" data-tab="pdf">PDF</button>
+        <button class="tab" data-tab="image">Image</button>
+        <div class="ml-auto flex items-center gap-3">
+          <span id="aiBadge" class="pill">AI: …</span>
+          <label class="flex items-center gap-2 text-sm font-medium">
+            <input id="useAi" type="checkbox" class="checkbox checkbox-sm" checked>
+            Use AI
+          </label>
+        </div>
+      </div>
+
+      <!-- Manual -->
+      <section id="panel-manual" class="pt-6 grid gap-6">
+        <form id="manualForm" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label class="label-muted">Commodity</label>
+            <input name="commodity" required class="input input-bordered w-full" placeholder="Rice" />
+          </div>
+          <div>
+            <label class="label-muted">Brand (optional)</label>
+            <input name="brand" class="input input-bordered w-full" placeholder="Mama Gold" />
+          </div>
+          <div>
+            <label class="label-muted">Unit Value</label>
+            <input name="unit_value" type="number" step="0.001" value="50" class="input input-bordered w-full" />
+          </div>
+          <div>
+            <label class="label-muted">Unit Name</label>
+            <select name="unit_name" class="select select-bordered w-full">
+              <option>kg</option><option>bag</option><option>crate</option><option>liter</option><option>unit</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="label-muted">Price (text)</label>
+            <input name="price_text" required class="input input-bordered w-full" placeholder="₦55,000 or USD 32" />
+          </div>
+
+          <div>
+            <label class="label-muted">State</label>
+            <select name="state" id="m_state" class="select select-bordered w-full"></select>
+          </div>
+          <div>
+            <label class="label-muted">City</label>
+            <select name="city" id="m_city" class="select select-bordered w-full"></select>
+          </div>
+          <div>
+            <label class="label-muted">Market (optional)</label>
+            <select name="market" id="m_market" class="select select-bordered w-full"></select>
+          </div>
+          <div>
+            <label class="label-muted">Date Uploaded</label>
+            <input name="date_uploaded" type="date" class="input input-bordered w-full" />
+          </div>
+
+          <div class="lg:col-span-3">
+            <button class="btn btn-primary-pro w-full py-3 text-base font-semibold">Save Row</button>
+          </div>
+        </form>
+
+        <div>
+          <h3 class="text-lg font-semibold mb-2">Result</h3>
+          <div id="manualResult" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+      </section>
+
+      <!-- CSV -->
+      <section id="panel-csv" class="hidden pt-6 grid gap-4">
+        <div class="grid gap-3">
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+            <input id="csvfile" type="file" accept=".csv" class="file-input file-input-bordered w-full" />
+            <button id="btnCsvPreview" class="btn btn-secondary-pro w-full sm:w-auto">Preview</button>
+            <button id="btnCsvCommit" class="btn btn-primary-pro w-full sm:w-auto" disabled>Commit Selected</button>
+          </div>
+          <small class="text-[color:var(--text-secondary)]">Expected columns: commodity, price_text, state, city, market?, brand?, unit_text?, date_uploaded?</small>
+        </div>
+        <div id="csvFilePreview" class="hidden pro-card p-3"><em>File attached.</em></div>
+        <div id="csvResult" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- PDF -->
+      <section id="panel-pdf" class="hidden pt-6 grid gap-4">
+        <div class="flex flex-col sm:flex-row items-center gap-4">
+          <input id="pdffile" type="file" accept="application/pdf" class="file-input file-input-bordered w-full" />
+          <button id="btnPdfPreview" class="btn btn-secondary-pro w-full sm:w-auto">Preview</button>
+          <button id="btnPdfCommit" class="btn btn-primary-pro w-full sm:w-auto" disabled>Commit Selected</button>
+        </div>
+        <div id="pdfPreview" class="hidden pro-card p-3">
+          <embed id="pdfEmbed" type="application/pdf" class="w-full h-72 rounded-xl" />
+        </div>
+        <div id="pdfResult" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- Image -->
+      <section id="panel-image" class="hidden pt-6 grid gap-4">
+        <div class="flex flex-col sm:flex-row items-center gap-4">
+          <input id="imgfile" type="file" accept="image/*" class="file-input file-input-bordered w-full" />
+          <button id="btnImgPreview" class="btn btn-secondary-pro w-full sm:w-auto">Preview</button>
+          <button id="btnImgCommit" class="btn btn-primary-pro w-full sm:w-auto" disabled>Commit Selected</button>
+        </div>
+        <div id="imgPreview" class="hidden pro-card p-3">
+          <img id="imgEmbed" class="max-h-72 w-full object-contain rounded-xl" />
+        </div>
+        <div id="imgResult" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+    </section>
+  </main>
+
+<script>
+/* === Config/theme === */
+const API_BASE = (window.API_BASE && String(window.API_BASE).replace(/\/+$/,'')) || 'http://127.0.0.1:8000';
+const $  = (q, el=document) => el.querySelector(q);
+const $$ = (q, el=document) => [...el.querySelectorAll(q)];
+const themeInput = $('#themeToggleInput');
+const setTheme = t => { document.documentElement.setAttribute('data-theme', t); themeInput.checked = (t==='dark'); };
+setTheme(localStorage.getItem('adm_theme') || 'light');
+themeInput.addEventListener('change', ()=>{ const t = themeInput.checked ? 'dark' : 'light'; setTheme(t); localStorage.setItem('adm_theme', t); });
+
+/* === Tabs === */
+function showTab(name){
+  $$('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+  ['manual','csv','pdf','image'].forEach(p=>{
+    const el = $('#panel-'+p);
+    (p===name) ? el.classList.remove('hidden') : el.classList.add('hidden');
+  });
+}
+$$('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
+
+/* === AI badge === */
+(async () => {
+  try {
+    const j = await (await fetch(API_BASE + "/")).json();
+    $('#aiBadge').textContent = j.gemini_available ? 'AI: available' : 'AI: not configured';
+  } catch { $('#aiBadge').textContent = 'AI: unknown'; }
+})();
+const useAi = ()=> $('#useAi').checked;
+
+/* === Locations === */
+async function loadLocations() {
+  // Kept as /locations to match your existing backend
+  const LOC = await (await fetch(API_BASE + "/locations")).json();
+  const s = $('#m_state'), c = $('#m_city'), m = $('#m_market');
+  s.innerHTML = ""; Object.keys(LOC).forEach(k => s.add(new Option(k,k)));
+  s.onchange = () => { c.innerHTML = ""; Object.keys(LOC[s.value]||{}).forEach(k => c.add(new Option(k,k))); c.onchange(); };
+  c.onchange = () => { m.innerHTML = ""; (LOC[s.value]?.[c.value] || []).forEach(v => m.add(new Option(v,v))); m.add(new Option("(none)","")); };
+  s.onchange();
+}
+loadLocations();
+
+/* === Render helper (cards with checkboxes) === */
+function renderPreview(container, rows, enableCommitBtn){
+  if (!rows?.length) { container.innerHTML = '<p class="text-sm text-[color:var(--text-secondary)]">No items.</p>'; enableCommitBtn(false); return; }
+  container.innerHTML = rows.map((r,i)=>`
+    <article class="pro-card p-4">
+      <header class="flex items-center justify-between mb-2">
+        <div class="font-semibold">${r.commodity} ${r.brand ? '• ' + r.brand : ''}</div>
+        <label class="label cursor-pointer flex items-center gap-2">
+          <span class="text-sm text-[color:var(--text-secondary)]">Include</span>
+          <input type="checkbox" class="checkbox checkbox-sm row-check" data-idx="${i}" checked>
+        </label>
+      </header>
+      <div class="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
+        <div><span class="text-[color:var(--text-secondary)]">Price (text)</span><div class="font-semibold">${r.price_text ?? '-'}</div></div>
+        <div><span class="text-[color:var(--text-secondary)]">Unit</span><div>${r.unit_text || '-'}</div></div>
+        <div><span class="text-[color:var(--text-secondary)]">State</span><div>${r.state || '-'}</div></div>
+        <div><span class="text-[color:var(--text-secondary)]">City</span><div>${r.city || '-'}</div></div>
+        <div><span class="text-[color:var(--text-secondary)]">Market</span><div>${r.market || '(none)'}</div></div>
+        <div><span class="text-[color:var(--text-secondary)]">Date</span><div>${r.date_uploaded || '-'}</div></div>
+      </div>
+    </article>
+  `).join('');
+  enableCommitBtn(true);
+}
+function selectedRows(container, allRows){
+  const checks = $$('.row-check', container);
+  const keep = checks.filter(ch => ch.checked).map(ch => parseInt(ch.dataset.idx,10));
+  return allRows.filter((_,i)=> keep.includes(i));
+}
+
+/* === Manual submit (writes immediately) === */
+$('#manualForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const res = await fetch(API_BASE + "/admin/manual", { method:"POST", body: fd });
+  const j = await res.json();
+  renderPreview($('#manualResult'), j.items, ()=>{});
+});
+
+/* === CSV: Preview just shows file; Commit sends directly to system (no AI, no server preview) === */
+let csvPreviewRows = []; // we don't need rows here; keeping for consistency with UI
+$('#btnCsvPreview').onclick = async ()=>{
+  const f = $('#csvfile').files[0]; if(!f){ alert('Choose a CSV first'); return; }
+  $('#csvFilePreview').classList.remove('hidden');
+  $('#csvFilePreview').innerHTML = `<div class="text-sm">File: <strong>${f.name}</strong></div>`;
+  // Enable commit; server will parse & store
+  $('#btnCsvCommit').disabled = false;
+  // Optional: render a simple “pending commit” card to match UI texture
+  renderPreview($('#csvResult'), [{
+    commodity: '— pending server commit —',
+    brand: '',
+    price_text: 'CSV will be parsed on commit',
+    unit_text: '',
+    state: '', city: '', market: '', date_uploaded: ''
+  }], ()=>{});
+};
+$('#btnCsvCommit').onclick = async ()=>{
+  const f = $('#csvfile').files[0]; if(!f){ alert('Choose a CSV first'); return; }
+  const form = new FormData(); form.append("file", f, f.name);
+  const res = await fetch(`${API_BASE}/admin/upload-csv`, { method:"POST", body: form });
+  const j = await res.json().catch(()=>({}));
+  if(res.ok){
+    alert(`CSV committed • Accepted: ${j.accepted}, Rejected: ${j.rejected}, Errors: ${j.errors}`);
+    // reset
+    $('#csvfile').value = "";
+    $('#btnCsvCommit').disabled = true;
+    $('#csvFilePreview').classList.add('hidden');
+    $('#csvResult').innerHTML = '';
+  } else {
+    alert(j?.detail || "CSV upload failed.");
+  }
+};
+
+/* === PDF preview/commit === */
+let pdfPreviewRows = [];
+$('#btnPdfPreview').onclick = async ()=>{
+  const f = $('#pdffile').files[0]; if(!f){ alert('Choose a PDF first'); return; }
+  $('#pdfPreview').classList.remove('hidden');
+  $('#pdfEmbed').src = URL.createObjectURL(f);
+  const form = new FormData(); form.append("file", f, f.name);
+  const res = await fetch(`${API_BASE}/admin/parse-pdf?use_ai=${$('#useAi').checked}`, { method:"POST", body: form });
+  const j = await res.json();
+  pdfPreviewRows = j.items || [];
+  renderPreview($('#pdfResult'), pdfPreviewRows, (on)=> $('#btnPdfCommit').disabled = !on);
+};
+$('#btnPdfCommit').onclick = async ()=>{
+  const rows = selectedRows($('#pdfResult'), pdfPreviewRows);
+  if(!rows.length){ alert('No rows selected.'); return; }
+  const res = await fetch(`${API_BASE}/admin/commit`, { method:"POST", headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rows, source: "pdf_preview" }) });
+  const j = await res.json();
+  alert(`Committed: ${j.accepted}, Rejected: ${j.rejected}, Errors: ${j.errors}`);
+};
+
+/* === Image preview/commit === */
+let imgPreviewRows = [];
+$('#btnImgPreview').onclick = async ()=>{
+  const f = $('#imgfile').files[0]; if(!f){ alert('Choose an image first'); return; }
+  $('#imgPreview').classList.remove('hidden');
+  $('#imgEmbed').src = URL.createObjectURL(f);
+  const form = new FormData(); form.append("file", f, f.name);
+  const res = await fetch(`${API_BASE}/admin/parse-image?use_ai=${$('#useAi').checked}`, { method:"POST", body: form });
+  const j = await res.json();
+  imgPreviewRows = j.items || [];
+  renderPreview($('#imgResult'), imgPreviewRows, (on)=> $('#btnImgCommit').disabled = !on);
+};
+$('#btnImgCommit').onclick = async ()=>{
+  const rows = selectedRows($('#imgResult'), imgPreviewRows);
+  if(!rows.length){ alert('No rows selected.'); return; }
+  const res = await fetch(`${API_BASE}/admin/commit`, { method:"POST", headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rows, source: "image_preview" }) });
+  const j = await res.json();
+  alert(`Committed: ${j.accepted}, Rejected: ${j.rejected}, Errors: ${j.errors}`);
+};
+</script>
+</body>
+</html>
