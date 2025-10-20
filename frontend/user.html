@@ -506,7 +506,7 @@ const Dashboard = {
 
   createPopulatedCard(data) {
     const el = document.createElement('article');
-    el.className = 'pro-card interactive-card p-5 flex flex-col gap-4 fade-in';
+    el.className = 'pro-card p-5 flex flex-col gap-4 fade-in';
     el.dataset.commodity = data.commodity;
 
     el.innerHTML = `
@@ -539,10 +539,7 @@ const Dashboard = {
         <canvas height="80"></canvas>
       </div>
     `;
-    el.addEventListener('click', () => {
-      go('view-specific');
-      prefillSpecific(data.commodity);
-    });
+   
     return el;
   },
   
