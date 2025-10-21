@@ -50,32 +50,43 @@ jobs:
 
 
   deploy:
-    name: Continuous-Deployment
-    needs: build-and-push-ecr-image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      name: Continuous-Deployment
+      needs: build-and-push-ecr-image
+      runs-on: ubuntu-latest
+      env:
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+      steps:
+        - uses: actions/checkout@v4
 
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+        - uses: aws-actions/configure-aws-credentials@v4
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ env.AWS_REGION }}
 
-      - id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        - id: login-ecr
+          uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Pull latest image (from ECR)
-        run: docker pull "${{ needs.build-and-push-ecr-image.outputs.image_uri }}"
+        - name: Compute IMAGE_URI
+          id: vars
+          run: |
+            echo "IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest" >> $GITHUB_ENV
+            test -n "$IMAGE_URI" || (echo "IMAGE_URI is empty"; exit 1)
 
-      - name: Run Docker Image to serve users
-        run: |
-          docker rm -f mltest 2>/dev/null || true
-          docker run -d --name mltest -p 8000:8000 --ipc=host \
-            -e AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY_ID }}' \
-            -e AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
-            -e AWS_REGION='${{ secrets.AWS_REGION }}' \
-            "${{ needs.build-and-push-ecr-image.outputs.image_uri }}"
+        - name: Pull latest image (from ECR)
+          run: docker pull "$IMAGE_URI"
 
-      - name: Clean previous images and containers
-        run: docker system prune -f
+        - name: Run Docker Image
+          run: |
+            docker rm -f mltest 2>/dev/null || true
+            docker run -d --name mltest -p 8000:8000 --ipc=host \
+              -e AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY_ID }}' \
+              -e AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
+              -e AWS_REGION='${{ env.AWS_REGION }}' \
+              "$IMAGE_URI"
+
+        - name: Clean previous images and containers
+          run: docker system prune -f
+
+        
